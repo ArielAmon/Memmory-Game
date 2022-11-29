@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Memory Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+</head>
+<body>
+<div class="container">
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-6 col-md-6">
+            <div class="p-3 mb-3 bg-light rounded-3">
+                <div class="container-fluid ">
+                    <h1 class="display-5 fw-bold">Memory Game</h1>
+                    <p class="col-12 fs-4">Click on the cards to flip them and find the matching pairs with as little flips as possible.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="mb-3 col-4">
+            <label for="nameInput" class="name">Your Name: </label>
+            <input type="text" class="form-control" id="nameInput" placeholder="Your name including letters and digits only !" required>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="mb-3 col-4">
+            <button class="btn btn-primary" type="button">Play!</button>
+            <button class="btn btn-light" type="submit">Settings</button>
+            <button type="button" class="btn btn-outline-success">High Scores</button>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="mb-3 col-3">
+            <label for="NumberOfRows" class="rows select">Numbers of rows: </label>
+            <select class="form-select" id="NumberOfRows" aria-label=".form-select-lg ">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option selected>4</option>
+                <option value="5">5</option>
+            </select>
+        </div>
+
+        <div class="mb-3 col-3">
+            <label for="NumberOfCols" class="cols select">Numbers of columns: </label>
+            <select class="form-select" id="NumberOfCols" aria-label=".form-select-lg ">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option selected>4</option>
+                <option value="5">5</option>
+            </select>
+        </div>
+    </div>
+
+
+
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+<script src="MemoryGame.js"></script>
+</body>
+</html>
