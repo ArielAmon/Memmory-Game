@@ -1,35 +1,68 @@
 "use strict";
 (()=>{
 
+    function createTable (playersList) {
+        console.log("In create", playersList)
+        let playersTable = "<table class='table table-hover table-light table-striped-columns'>"+
+            " <thead >" +
+            "<tr>" +
+            " <th> Rank </th> " +
+            " <th> Player </th> " +
+            " <th> Score </th> " +
+            "</tr> " +
+            "</thead>" +
+            "<tbody > " ;
+
+        playersList.forEach(player =>{
+            playersTable += "" +
+                "<tr  > " +
+                "<td >" + (playersList.indexOf(player) + 1) + " </td> " +
+                "<td >" + player.player + " </td> " +
+                "<td >" + player.score + " </td> " +
+                " </tr> "
+        })
+        playersTable += "</tbody> " + "</table> " ;
+        return playersTable;
+    }
+
+
+
+
+
+
 
     document.addEventListener("DOMContentLoaded", () => {
 
     // all buttons elements
     const playButton = document.getElementById("btnPlay");
-    const settingsButton = document.getElementById("btnSettings");
     const scoresButton = document.getElementById("btnScores");
 
-    const setting = document.getElementById("settings");
+        let players = [ {player: "Ariel", score: 60},
+                        {player: "Sol", score: 100},
+                        {player: "Menny", score: 80},
+                        {player: "ELi", score: 200}];
+
+
+        localStorage.setItem("players", JSON.stringify(players));
+
+
     const leaderboardModal = new bootstrap.Modal('#scores-modal')
     const leaderboardModalContent = document.getElementsByClassName("modal-body")[0].children[0];
-
-
-    settingsButton.addEventListener('click' , ()=>{
-        if (setting.style.display === "none") {
-            setting.style.display = "block";
-        } else {
-            setting.style.display = "none";
-        }
-    });
 
     scoresButton.addEventListener('click', ()=>{
         if (window.localStorage.length === 0){
             leaderboardModal.show();
-            leaderboardModalContent.textContent = "No high scores yet !"
+            leaderboardModalContent.textContent = "No high scores yet !";
         }
-        // else{
-        //     leaderboardModalContent.textContent = window.localStorage.
-        // }
+        else{
+            const leadPlayers = JSON.parse(localStorage.getItem('players'));
+            console.log(leadPlayers);
+            function sortPlayersByScore() {
+                return createTable(leadPlayers.slice(0,3).sort( (playerA, playerB) =>{return(playerA.score > playerB.score ? -1 : 1); }));
+            }
+            leaderboardModalContent.innerHTML = sortPlayersByScore();
+            leaderboardModal.show();
+        }
 
 
     })
