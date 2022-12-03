@@ -1,6 +1,10 @@
 "use strict";
 (()=>{
-
+    /**
+     *
+     * @param playersList
+     * @returns {string}
+     */
     function createTable (playersList) {
         console.log("In create", playersList)
         let playersTable = "<table class='table table-hover table-light table-striped-columns'>"+
@@ -26,6 +30,25 @@
     }
 
 
+    function checkSelection(firstSelection, rows, cols) {
+
+        const errorMessage = "Number of cards (rows X columns) must be\n even, please correct your choice."
+        console.log("in check",firstSelection,rows,cols)
+
+            if( ( (rows * cols) % 2 ) !== 0 && (!document.contains( document.getElementById("errorMessage")))) {
+                const para = document.createElement("p");
+                para.id = "errorMessage"
+                para.innerText = errorMessage;
+                document.getElementById(`${firstSelection}`).appendChild(para);
+                para.style.display = "block";
+                para.style.color = `red`;
+            }
+            else{
+                if(document.contains( document.getElementById("errorMessage")))
+                    document.getElementById("errorMessage").remove();
+            }
+    }
+
 
 
 
@@ -36,6 +59,8 @@
     // all buttons elements
     const playButton = document.getElementById("btnPlay");
     const scoresButton = document.getElementById("btnScores");
+    const selectRows = document.getElementById("NumberOfRows");
+    const selectCols = document.getElementById("NumberOfCols");
 
         let players = [ {player: "Ariel", score: 60},
                         {player: "Sol", score: 100},
@@ -49,49 +74,55 @@
     const leaderboardModal = new bootstrap.Modal('#scores-modal')
     const leaderboardModalContent = document.getElementsByClassName("modal-body")[0].children[0];
 
-    scoresButton.addEventListener('click', ()=>{
-        if (window.localStorage.length === 0){
-            leaderboardModal.show();
-            leaderboardModalContent.textContent = "No high scores yet !";
-        }
-        else{
-            const leadPlayers = JSON.parse(localStorage.getItem('players'));
-            console.log(leadPlayers);
-            function sortPlayersByScore() {
-                return createTable(leadPlayers.slice(0,3).sort( (playerA, playerB) =>{return(playerA.score > playerB.score ? -1 : 1); }));
+    let selectedFirst = "";
+    let numOfRows , numOfCols;
+    numOfRows = numOfCols = 0;
+
+
+        scoresButton.addEventListener('click', ()=>{
+            if (window.localStorage.length === 0){
+                leaderboardModal.show();
+                leaderboardModalContent.textContent = "No high scores yet !";
             }
-            leaderboardModalContent.innerHTML = sortPlayersByScore();
-            leaderboardModal.show();
-        }
+            else{
+                const leadPlayers = JSON.parse(localStorage.getItem('players'));
+                console.log(leadPlayers);
+                function sortPlayersByScore() {
+                    return createTable(leadPlayers.slice(0,3).sort( (playerA, playerB) =>{return(playerA.score > playerB.score ? -1 : 1); }));
+                }
+                leaderboardModalContent.innerHTML = sortPlayersByScore();
+                leaderboardModal.show();
+            }
+        });
+
+        selectRows.addEventListener('change', (e) =>{
+            if(selectedFirst === "" ) selectedFirst = "rows"
+
+            numOfRows = Number(e.target.value) ;
+            console.log(numOfRows,numOfCols )
+            if (numOfRows !== 0 && numOfCols !== 0) {
+                checkSelection(selectedFirst, numOfRows, numOfCols);
+                selectedFirst = "";
+                numOfRows = 0 ;
+            }
+
+        })
+
+        selectCols.addEventListener('change', (e) =>{
+            if (selectedFirst === "" ) selectedFirst = "cols"
+
+            numOfCols = Number(e.target.value) ;
+            console.log(numOfRows, numOfCols )
+            if (numOfRows !== 0 && numOfCols !== 0) {
+                checkSelection(selectedFirst, numOfRows, numOfCols);
+                selectedFirst = "";
+                numOfCols = 0 ;
+            }
+
+        })
 
 
-    })
 
-
-
-
-
-
-
-
-    /*    document.getElementById("messageForm").addEventListener("submit", (event) => {
-        event.preventDefault();
-
-        // we validate the product:
-        if (validateProduct(prod)) {
-            // if the product is valid, we add it to the list of products:
-            document.getElementById("errorMessages").innerHTML = "Product is saved!";
-            // add the product to the list of products and update the HTML table
-            addProduct(prod);
-        } else
-            // if the product is not valid, we display the errors:
-            document.getElementById("errorMessages").innerHTML = convertErrorsToHtml(errorMessages);
-    });
-
-    // the sort button handler:
-    document.getElementById("sortByReference").addEventListener("click", (event) => {
-        sortProductsByReference();
-    })*/
 
 });
 
