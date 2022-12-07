@@ -1,7 +1,7 @@
 "use strict";
 (()=>{
 
-    //-----------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------
 
     function getSetHtmlElements (){
 
@@ -16,6 +16,7 @@
         const selectRows = document.getElementById("NumberOfRows");
         const selectCols = document.getElementById("NumberOfCols");
         const selectDelay = document.getElementById("Delay");
+        const gameBoard = document.querySelector('.table')
 
         const NameDiv = document.getElementById("Name");
         const rowsDiv = document.getElementById("rows");
@@ -34,6 +35,7 @@
         const colsDivElem = () =>{ return colsDiv; }
         const nameDivElem = () =>{ return NameDiv; }
         const formDivElem = () =>{ return formDiv; }
+        const gameBoardElem = () =>{ return gameBoard; }
 
         const leaderboard = () =>{ return leaderboardModal; }
         const leaderboardContent = () =>{ return leaderboardModalContent; }
@@ -60,6 +62,7 @@
             getColsDivElem : colsDivElem,
             getNameDivElem : nameDivElem,
             getFormDivElem : formDivElem,
+            getGameBoardElem : gameBoardElem,
             getPlayerNameElem : playerName,
             getLeaderboardModal : leaderboard,
             getLeaderboardContent : leaderboardContent,
@@ -69,6 +72,56 @@
         }
 
     }
+
+//-----------------------------------------------------------------------------------
+    function gamePreparations(){
+
+        return {
+            buildBoard: (table, unknown, rows, cols) =>{
+
+                for (let row = 0; row < rows; row++) {
+                    let tr = document.createElement("tr");
+                    for (let col = 0; col < cols; col++) {
+                        let td = document.createElement("td");
+                        let img = document.createElement("img");
+                        img.src = unknown;
+                        img.setAttribute('data-id', 'i')
+                        td.appendChild(img);
+                        tr.appendChild(td);
+                    }
+                    table.appendChild(tr);
+                }
+
+            },
+
+            pickRandom :  (array, items) => {
+            const clonedArray = [...array];
+            const randomPicks = [];
+
+            for (let index = 0; index < items; index++) {
+                const randomIndex = Math.floor(Math.random() * clonedArray.length);
+
+                randomPicks.push(clonedArray[randomIndex]);
+                clonedArray.splice(randomIndex, 1);
+            }
+            return randomPicks;
+        },
+
+            shuffle : (array) =>{
+            const clonedArray = [...array];
+
+            for (let index = clonedArray.length - 1; index > 0; index--) {
+                const randomIndex = Math.floor(Math.random() * (index + 1));
+                const original = clonedArray[index];
+
+                clonedArray[index] = clonedArray[randomIndex];
+                clonedArray[randomIndex] = original;
+            }
+            return clonedArray;
+        }
+        }
+    }
+
 
 //-----------------------------------------------------------------------------------
 
@@ -84,37 +137,6 @@
             playersTable += "</tbody> " + "</table> " ;
             return playersTable;
         }
-
-        //private function
-        function pickRandom (array, items)  {
-            const clonedArray = [...array];
-            const randomPicks = [];
-
-            for (let index = 0; index < items; index++) {
-                const randomIndex = Math.floor(Math.random() * clonedArray.length);
-
-                randomPicks.push(clonedArray[randomIndex]);
-                clonedArray.splice(randomIndex, 1);
-            }
-
-            return randomPicks;
-        }
-
-        //private function
-        function shuffle (array) {
-            const clonedArray = [...array];
-
-            for (let index = clonedArray.length - 1; index > 0; index--) {
-                const randomIndex = Math.floor(Math.random() * (index + 1));
-                const original = clonedArray[index];
-
-                clonedArray[index] = clonedArray[randomIndex];
-                clonedArray[randomIndex] = original;
-            }
-
-            return clonedArray;
-        }
-
 
 
         const leaderboardTable = (modal, content) =>{
@@ -134,41 +156,14 @@
             }
         }
 
-        const startGame = (images, rows, cols) => {
-            const picks = pickRandom(images, (rows * cols) / 2);
-            const items = shuffle([...picks, ...picks]);
-            console.log(items)
-            const table = document.querySelector('.board')
+        const startGame = (table, images, rows, cols) => {
+            const gamePrep = gamePreparations();
 
-            let index = 0
-            // create the table element
-            // create the rows and cells of the table
-            for (let row = 0; row < rows; row++) {
-                let tr = document.createElement("tr");
-                for (let col = 0; col < cols; col++,index++) {
-                    let td = document.createElement("td");
-                    let img = document.createElement("img");
-                    img.src = items[index].img;
-                    img.classList.add(`${row}${col}`)
-                    //img.classList.add(`${array[count++]}`)
-                    td.appendChild(img);
-                    tr.appendChild(td);
-                }
-                table.appendChild(tr);
-            }
+            gamePrep.buildBoard(table, images[0].img, rows, cols);
+            const picks = gamePrep.pickRandom(images, (rows * cols) / 2);
+            const items = gamePrep.shuffle([...picks, ...picks]);
 
-            // insert the table into the page
-
-
-            /*            for (let i = 0; i < items.length; i++) {
-                            const card = document.createElement('img')
-                            card.setAttribute('src', 'images/blank.png')
-                            card.setAttribute('data-id', i)
-                            //card.addEventListener('click', flipCard)
-
-                            grid.appendChild(card)
-                        }*/
-
+            //console.log(items)
 
         }
 
@@ -225,8 +220,8 @@
             "Name cannot contain special charcters, \n also be no more than 12 characters."
         ];
 
-        const unknownCard = { name: 'unknown', img: 'images/card.jpg'};
         const cardArray = [
+            { name: 'Banana', img: 'images/card.jpg'},
             { name: 'Banana', img: 'images/0.jpg'},
             { name: 'Grape', img: 'images/1.jpg'},
             { name: 'Coconut', img: 'images/2.jpg'},
@@ -338,8 +333,8 @@
                     document.getElementById("wrongName").remove()
 
                 domElements.getFormDivElem().style.display = 'none';
-                gameData.initGameStat(name, domElements.getRowsSelect().value, domElements.getColsSelect().value);
-                handleButtonsClick.runGame(gameData.getCardArray(),gameData.getBoardRows(),gameData.getBoardCols());
+                gameData.initGameStat( name, domElements.getRowsSelect().value, domElements.getColsSelect().value);
+                handleButtonsClick.runGame(domElements.getGameBoardElem(),gameData.getCardArray(),gameData.getBoardRows(),gameData.getBoardCols());
                 document.getElementById("game").style.display = 'block'
 
             }
