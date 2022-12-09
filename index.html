@@ -13,102 +13,106 @@
 </head>
 <body>
 
-    <div class="container mt-5">
+<div class="container mt-5">
 
-        <div class="p-2 mb-3 bg-light rounded-3 d-flex justify-content-center">
-            <div class="container-fluid py-2">
-                <h1 class="display-5 fw-bold">Memory Game</h1>
-                <p class="col-12 fs-4">Click on the cards to flip them and find the<br> matching pairs with as little flips as possible.</p>
-            </div>
+    <div class="p-2 mb-3 bg-light rounded-3 d-flex justify-content-center">
+        <div class="container-fluid py-2">
+            <h1 class="display-5 fw-bold">Memory Game</h1>
+            <p class="col-12 fs-4">Click on the cards to flip them and find the<br> matching pairs with as little flips as possible.</p>
         </div>
-
-        <form id="preGame" class="row g-2">
-
-            <div class="row g-2">
-                <div id = "Name" class=" mb-3 col-lg-5 col-md-5 col-sm-12">
-                    <label for="playerName" class="form-label">Your Name: </label>
-                    <input type="text" class="form-control" id="playerName" placeholder="Your name including letters and digits only !" required>
-                </div>
-            </div>
-
-            <div class="row g-2">
-                <div class="mb-3 col-sm-12">
-                    <button id = "btnPlay" class="btn btn-primary" type="button">Play</button>
-                    <button id = "btnSettings" class="btn btn-light" type="button" data-bs-toggle="collapse" data-bs-target="#settings" aria-expanded="false" aria-controls="collapseExample">Settings</button>
-                    <button id = "btnScores" class="btn btn-outline-success" type="button">High Scores</button>
-                </div>
-            </div>
-
-            <div id="settings" class="collapse">
-                <div class="row g-2">
-                    <div id="rows" class="mb-3 col-lg-6 col-md-6 col-sm-12">
-                        <label for="NumberOfRows" class="rows select">Numbers of rows: </label>
-                        <select class="form-select" id="NumberOfRows" aria-label=".form-select-lg ">
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4" selected>4</option>
-                            <option value="5">5</option>
-                        </select>
-                    </div>
-
-                    <div id="cols" class="mb-3 col-lg-6 col-md-6 col-sm-12">
-                        <label for="NumberOfCols" class="cols select">Numbers of columns: </label>
-                        <select class="form-select" id="NumberOfCols" aria-label=".form-select-lg ">
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4" selected>4</option>
-                            <option value="5">5</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3 col-lg-6 col-md-6 col-sm-12">
-                        <label for="Delay" class="cols select">Delay(in seconds): </label>
-                        <select class="form-select" id="Delay" aria-label=".form-select-lg ">
-                            <option value="0.5" selected>0.5</option>
-                            <option value="1">1</option>
-                            <option value="1.5">1.5</option>
-                            <option value="2">2</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </form>
-
-        <div id="game" style="display: none">
-            <h5 id = "stpes">Steps : </h5>
-            <div class="board-container">
-                <div class="board" ></div>
-
-            </div>
-            <button id = "btnAbandon" class="btn btn-primary" type="button">Abandon</button>
-        </div>
-
-
-        <div class="modal fade" tabindex="-1" id="scores-modal">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Leaderboard</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p id ="Leaderboard content">Modal body text goes here.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-
-
-
-
-
-
     </div>
+
+    <form id="preGame" class="row g-2">
+
+        <div class="row g-2">
+            <div id = "Name" class=" mb-3 col-lg-5 col-md-5 col-sm-12">
+                <label for="playerName" class="form-label">Your Name: </label>
+                <input type="text" class="form-control" id="playerName" placeholder="Your name including letters and digits only !" required>
+            </div>
+        </div>
+
+        <div class="row g-2">
+            <div class="mb-3 col-sm-12">
+                <button id = "btnPlay" class="btn btn-primary" type="button">Play</button>
+                <button id = "btnSettings" class="btn btn-light" type="button" data-bs-toggle="collapse" data-bs-target="#settings" aria-expanded="false" aria-controls="collapseExample">Settings</button>
+                <button id = "btnScores" class="btn btn-outline-success" type="button">High Scores</button>
+            </div>
+        </div>
+
+        <div id="settings" class="collapse">
+            <div class="row g-2">
+                <div id="rows" class="mb-3 col-lg-6 col-md-6 col-sm-12">
+                    <label for="NumberOfRows" class="rows select">Numbers of rows: </label>
+                    <select class="form-select" id="NumberOfRows" aria-label=".form-select-lg ">
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4" selected>4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+
+                <div id="cols" class="mb-3 col-lg-6 col-md-6 col-sm-12">
+                    <label for="NumberOfCols" class="cols select">Numbers of columns: </label>
+                    <select class="form-select" id="NumberOfCols" aria-label=".form-select-lg ">
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4" selected>4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+
+                <div class="mb-3 col-lg-6 col-md-6 col-sm-12">
+                    <label for="Delay" class="cols select">Delay(in seconds): </label>
+                    <select class="form-select" id="Delay" aria-label=".form-select-lg ">
+                        <option value="0.5" selected>0.5</option>
+                        <option value="1">1</option>
+                        <option value="1.5">1.5</option>
+                        <option value="2">2</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div id="game" style="display: none">
+        <h5 id = "steps"></h5>
+        <div class="image-grid-container">
+            <div class="table"></div>
+        </div>
+        <button id = "btnAbandon" class="btn btn-primary" type="button">Abandon</button>
+    </div>
+
+    <div id="gameOver" style="display: none">
+        <h3 id = "Game Over!"></h3>
+        <h4 id = "Number of cards played:"></h4>
+    </div>
+
+
+    <div class="modal fade" tabindex="-1" id="scores-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Leaderboard</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id ="Leaderboard content">Modal body text goes here.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+</div>
 
 
 

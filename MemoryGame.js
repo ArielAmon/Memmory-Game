@@ -1,7 +1,7 @@
 "use strict";
 (()=>{
 
-    //-----------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------
 
     function getSetHtmlElements (){
 
@@ -12,10 +12,12 @@
         const playNameInput = document.getElementById("playerName");
         const playButton = document.getElementById("btnPlay");
         const scoresButton = document.getElementById("btnScores");
+        const abandonButton = document.getElementById("btnAbandon");
 
         const selectRows = document.getElementById("NumberOfRows");
         const selectCols = document.getElementById("NumberOfCols");
         const selectDelay = document.getElementById("Delay");
+        const gameBoard = document.querySelector('.table')
 
         const NameDiv = document.getElementById("Name");
         const rowsDiv = document.getElementById("rows");
@@ -25,6 +27,7 @@
         const score = () =>{ return scoresButton; }
         const play = () =>{ return playButton; }
         const playerName = () =>{ return playNameInput; }
+        const abandonGame = () =>{ return abandonButton; }
 
         const rows = () =>{ return selectRows; }
         const cols = () =>{ return selectCols; }
@@ -34,6 +37,7 @@
         const colsDivElem = () =>{ return colsDiv; }
         const nameDivElem = () =>{ return NameDiv; }
         const formDivElem = () =>{ return formDiv; }
+        const gameBoardElem = () =>{ return gameBoard; }
 
         const leaderboard = () =>{ return leaderboardModal; }
         const leaderboardContent = () =>{ return leaderboardModalContent; }
@@ -53,6 +57,7 @@
         return{
             getScoreButton : score,
             getPlayButton : play,
+            getAbandonButton : abandonGame,
             getRowsSelect : rows,
             getColsSelect : cols,
             getDelaySelect : delay,
@@ -60,6 +65,7 @@
             getColsDivElem : colsDivElem,
             getNameDivElem : nameDivElem,
             getFormDivElem : formDivElem,
+            getGameBoardElem : gameBoardElem,
             getPlayerNameElem : playerName,
             getLeaderboardModal : leaderboard,
             getLeaderboardContent : leaderboardContent,
@@ -71,10 +77,81 @@
     }
 
 //-----------------------------------------------------------------------------------
+    function gamePreparations(){
+
+        return {
+            buildBoard: (table, unknown, rows, cols, func) =>{
+                let i = 0 ;
+                for (let row = 0; row < rows; row++) {
+                    let tr = document.createElement("tr");
+                    for (let col = 0; col < cols; col++,i++) {
+                        let td = document.createElement("td");
+                        let card = document.createElement("img");
+                        card.src = unknown;
+                        card.addEventListener('click', func)
+                        card.setAttribute('card-id', `${i}`);
+                        td.appendChild(card);
+                        tr.appendChild(td);
+                    }
+                    table.appendChild(tr);
+                }
+
+            },
+
+            pickRandom : (array, items) => {
+                const clonedArray = [...array];
+                const randomPicks = [];
+
+                for (let index = 0; index < items; index++) {
+                    const randomIndex = Math.floor(Math.random() * clonedArray.length);
+
+                    randomPicks.push(clonedArray[randomIndex]);
+                    clonedArray.splice(randomIndex, 1);
+                }
+                return randomPicks;
+            },
+
+            shuffle : (array) =>{
+                const clonedArray = [...array];
+
+                for (let index = clonedArray.length - 1; index > 0; index--) {
+                    const randomIndex = Math.floor(Math.random() * (index + 1));
+                    const original = clonedArray[index];
+
+                    clonedArray[index] = clonedArray[randomIndex];
+                    clonedArray[randomIndex] = original;
+                }
+                return clonedArray;
+            }
+        }
+    }
+
+
+//-----------------------------------------------------------------------------------
 
     function handleClickEvents (){
 
-        //private function
+        let items = [];
+        let cardsChosen = [];
+        let cardsChosenId = [];
+        let cardsMatched = [];
+        let cardsMatchedId = [];
+        let gameDelay ,cards ;
+        let steps = 0 ;
+        let stepsElem = document.getElementById("steps")
+
+
+        function initData (delay) {
+            items = [];
+            cardsChosen = [];
+            cardsChosenId = [];
+            cardsMatched = [];
+            cardsMatchedId = [];
+            steps = 0 ;
+            gameDelay = delay * 1000;
+        }
+
+
         function createTable (playersList) {
             let playersTable = "<table class='table table-hover table-light table-striped-columns'>"+
                 " <thead >" + "<tr>" + " <th> Rank </th> " + " <th> Player </th> " + " <th> Score </th> " + "</tr> " + "</thead>" + "<tbody > " ;
@@ -85,37 +162,45 @@
             return playersTable;
         }
 
-        //private function
-        function pickRandom (array, items)  {
-            const clonedArray = [...array];
-            const randomPicks = [];
+        function checkMatchCards () {
 
-            for (let index = 0; index < items; index++) {
-                const randomIndex = Math.floor(Math.random() * clonedArray.length);
-
-                randomPicks.push(clonedArray[randomIndex]);
-                clonedArray.splice(randomIndex, 1);
+            if (cardsChosen[0] === cardsChosen[1] && cardsChosenId[0] !== cardsChosenId[1]){
+                cards[cardsChosenId[0]].removeEventListener('click', flipCard);
+                cards[cardsChosenId[1]].removeEventListener('click', flipCard);
+                cardsMatched.push(cardsChosen)
+                cardsMatchedId.push(cardsChosenId[0])
+                cardsMatchedId.push(cardsChosenId[1])
+            }
+            else {
+            cards[cardsChosenId[0]].setAttribute('src', 'images/card.jpg')
+            cards[cardsChosenId[1]].setAttribute('src', 'images/card.jpg')
             }
 
-            return randomPicks;
-        }
-
-        //private function
-        function shuffle (array) {
-            const clonedArray = [...array];
-
-            for (let index = clonedArray.length - 1; index > 0; index--) {
-                const randomIndex = Math.floor(Math.random() * (index + 1));
-                const original = clonedArray[index];
-
-                clonedArray[index] = clonedArray[randomIndex];
-                clonedArray[randomIndex] = original;
+            if  (cardsMatched.length === items.length) {
+               console.log('Congratulations! You found them all!')
             }
-
-            return clonedArray;
+            cards.forEach((elem) =>{
+                if (!cardsMatchedId.includes(elem.getAttribute('card-id')))
+                    elem.addEventListener('click', flipCard)});
+            cardsChosen = [];
+            cardsChosenId = [];
         }
 
 
+        function flipCard () {
+
+            steps++;
+            stepsElem.textContent = `Steps: ${steps} `
+            let imageIndex = this.getAttribute('card-id')
+            cardsChosen.push(items[imageIndex].name)
+            cardsChosenId.push(imageIndex);
+            this.setAttribute('src', items[imageIndex].img)
+            if (cardsChosen.length ===2) {
+                cards.forEach((elem) =>{elem.removeEventListener('click', flipCard);});
+                setTimeout(checkMatchCards, gameDelay);
+            }
+
+        }
 
         const leaderboardTable = (modal, content) =>{
             if (window.localStorage.length === 0){
@@ -134,48 +219,30 @@
             }
         }
 
-        const startGame = (images, rows, cols) => {
-            const picks = pickRandom(images, (rows * cols) / 2);
-            const items = shuffle([...picks, ...picks]);
+/*             playerName : name,
+            board :domElements.getGameBoardElem(),
+            allCard : gameData.getCardArray(),
+            row : gameData.getBoardRows(),
+            col : gameData.getBoardCols(),
+            delay : gameData.getGameDelay(),*/
+
+        const startGame = (gameInfo) => {
+            //console.log(gameInfo.allCard)
+            const gamePrep = gamePreparations();
+            initData(gameInfo.delay);
+
+            stepsElem.textContent = `Steps: ${steps} `
+            gamePrep.buildBoard(gameInfo.board, gameInfo.allCard[0].img, gameInfo.row, gameInfo.col, flipCard);
+            cards = document.querySelectorAll('img')
+            const picks = gamePrep.pickRandom(gameInfo.allCard.splice(1,gameInfo.allCard.length+1), (gameInfo.row * gameInfo.col) / 2);
+            items = gamePrep.shuffle([...picks, ...picks]);
             console.log(items)
-            const table = document.querySelector('.board')
-
-            let index = 0
-            // create the table element
-            // create the rows and cells of the table
-            for (let row = 0; row < rows; row++) {
-                let tr = document.createElement("tr");
-                for (let col = 0; col < cols; col++,index++) {
-                    let td = document.createElement("td");
-                    let img = document.createElement("img");
-                    img.src = items[index].img;
-                    img.classList.add(`${row}${col}`)
-                    //img.classList.add(`${array[count++]}`)
-                    td.appendChild(img);
-                    tr.appendChild(td);
-                }
-                table.appendChild(tr);
-            }
-
-            // insert the table into the page
-
-
-            /*            for (let i = 0; i < items.length; i++) {
-                            const card = document.createElement('img')
-                            card.setAttribute('src', 'images/blank.png')
-                            card.setAttribute('data-id', i)
-                            //card.addEventListener('click', flipCard)
-
-                            grid.appendChild(card)
-                        }*/
-
-
         }
+
 
         return {
             displayHighScore : leaderboardTable,
-            runGame : startGame
-
+            runGame : startGame,
         }
     }
 
@@ -225,8 +292,8 @@
             "Name cannot contain special charcters, \n also be no more than 12 characters."
         ];
 
-        const unknownCard = { name: 'unknown', img: 'images/card.jpg'};
         const cardArray = [
+            { name: 'unknown', img: 'images/card.jpg'},
             { name: 'Banana', img: 'images/0.jpg'},
             { name: 'Grape', img: 'images/1.jpg'},
             { name: 'Coconut', img: 'images/2.jpg'},
@@ -261,12 +328,14 @@
 
             setBoardRows: (rows)=>{ boardRows = rows;},
             setBoardCols: (cols)=>{ boardCols = cols;},
-            setGameDelay: (delay)=>{ gameDelay = delay;},
+            setGameDelay: (delay)=>{
+                gameDelay = delay;},
 
-            initGameStat: (name, rows, cols)=>{
+            initGameStat: (name, rows, cols, delay)=>{
                 playersList.push({name : 0})
-                 boardRows = rows;
-                 boardCols = cols;
+                boardRows = rows;
+                boardCols = cols;
+                gameDelay = delay;
             },
 
         }
@@ -281,10 +350,10 @@
 
 
         let players = [ {player: "Ariel", score: 70},
-                        {player: "Sol", score: 100},
-                        {player: "Noam", score: 8000000},
-                        {player: "ELi", score: 2500},
-                        {player: "Miri", score: 5000}];
+            {player: "Sol", score: 100},
+            {player: "Noam", score: 8000000},
+            {player: "ELi", score: 2500},
+            {player: "Miri", score: 5000}];
 
 
         localStorage.setItem("players", JSON.stringify(players));
@@ -338,23 +407,41 @@
                     document.getElementById("wrongName").remove()
 
                 domElements.getFormDivElem().style.display = 'none';
-                gameData.initGameStat(name, domElements.getRowsSelect().value, domElements.getColsSelect().value);
-                handleButtonsClick.runGame(gameData.getCardArray(),gameData.getBoardRows(),gameData.getBoardCols());
-                document.getElementById("game").style.display = 'block'
+                gameData.initGameStat( name, domElements.getRowsSelect().value, domElements.getColsSelect().value, domElements.getDelaySelect().value);
+                let data = {
+                    playerName : name,
+                    board :domElements.getGameBoardElem(),
+                    allCard : gameData.getCardArray(),
+                    row : gameData.getBoardRows(),
+                    col : gameData.getBoardCols(),
+                    delay : gameData.getGameDelay(),
 
+                };
+                handleButtonsClick.runGame(data);
+                //handleButtonsClick.runGame(domElements.getGameBoardElem(),gameData.getCardArray(),gameData.getBoardRows(),gameData.getBoardCols(),gameData.getGameDelay());
+                document.getElementById("game").style.display = 'block'
             }
             else{
-               if (!document.contains(document.getElementById("wrongName")))
+                if (!document.contains(document.getElementById("wrongName")))
                     domElements.getNameDivElem().appendChild(domElements.setNewElement("p","wrongName",gameData.getError(1),"block",`red`))
             }
-
-
-
         });
 
+        domElements.getAbandonButton().addEventListener('click', ()=>{
+            (() =>{
+                while ( domElements.getGameBoardElem().firstChild) {
+                    domElements.getGameBoardElem().removeChild( domElements.getGameBoardElem().firstChild);
+                }
+            })();
+            document.getElementById("game").style.display = 'none';
+            domElements.getFormDivElem().style.display = 'block';
+        })
 
 
 
-});
+
+
+
+    });
 
 })();
