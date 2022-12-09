@@ -17,6 +17,7 @@
         const selectCols = document.getElementById("NumberOfCols");
         const selectDelay = document.getElementById("Delay");
         const gameBoard = document.querySelector('.table')
+        //const card = document.getElementById("card-id");
 
         const NameDiv = document.getElementById("Name");
         const rowsDiv = document.getElementById("rows");
@@ -36,6 +37,7 @@
         const nameDivElem = () =>{ return NameDiv; }
         const formDivElem = () =>{ return formDiv; }
         const gameBoardElem = () =>{ return gameBoard; }
+        //const gameCardElem = () =>{ return card; }
 
         const leaderboard = () =>{ return leaderboardModal; }
         const leaderboardContent = () =>{ return leaderboardModalContent; }
@@ -63,6 +65,7 @@
             getNameDivElem : nameDivElem,
             getFormDivElem : formDivElem,
             getGameBoardElem : gameBoardElem,
+            //getCardElem : gameCardElem,
             getPlayerNameElem : playerName,
             getLeaderboardModal : leaderboard,
             getLeaderboardContent : leaderboardContent,
@@ -77,48 +80,49 @@
     function gamePreparations(){
 
         return {
-            buildBoard: (table, unknown, rows, cols) =>{
-
-                for (let row = 0; row < rows; row++) {
-                    let tr = document.createElement("tr");
-                    for (let col = 0; col < cols; col++) {
-                        let td = document.createElement("td");
-                        let img = document.createElement("img");
-                        img.src = unknown;
-                        img.setAttribute('data-id', 'i')
-                        td.appendChild(img);
-                        tr.appendChild(td);
+                buildBoard: (table, unknown, rows, cols) =>{
+                    let i = 0 ;
+                    for (let row = 0; row < rows; row++) {
+                        let tr = document.createElement("tr");
+                        for (let col = 0; col < cols; col++,i++) {
+                            let td = document.createElement("td");
+                            let card = document.createElement("img");
+                            card.src = unknown;
+                            card.setAttribute('card-id', `${i}`);
+                            card.addEventListener('click',func)
+                            td.appendChild(card);
+                            tr.appendChild(td);
+                        }
+                        table.appendChild(tr);
                     }
-                    table.appendChild(tr);
-                }
 
+                },
+
+                pickRandom :  (array, items) => {
+                const clonedArray = [...array];
+                const randomPicks = [];
+
+                for (let index = 0; index < items; index++) {
+                    const randomIndex = Math.floor(Math.random() * clonedArray.length);
+
+                    randomPicks.push(clonedArray[randomIndex]);
+                    clonedArray.splice(randomIndex, 1);
+                }
+                return randomPicks;
             },
 
-            pickRandom :  (array, items) => {
-            const clonedArray = [...array];
-            const randomPicks = [];
+                shuffle : (array) =>{
+                const clonedArray = [...array];
 
-            for (let index = 0; index < items; index++) {
-                const randomIndex = Math.floor(Math.random() * clonedArray.length);
+                for (let index = clonedArray.length - 1; index > 0; index--) {
+                    const randomIndex = Math.floor(Math.random() * (index + 1));
+                    const original = clonedArray[index];
 
-                randomPicks.push(clonedArray[randomIndex]);
-                clonedArray.splice(randomIndex, 1);
+                    clonedArray[index] = clonedArray[randomIndex];
+                    clonedArray[randomIndex] = original;
+                }
+                return clonedArray;
             }
-            return randomPicks;
-        },
-
-            shuffle : (array) =>{
-            const clonedArray = [...array];
-
-            for (let index = clonedArray.length - 1; index > 0; index--) {
-                const randomIndex = Math.floor(Math.random() * (index + 1));
-                const original = clonedArray[index];
-
-                clonedArray[index] = clonedArray[randomIndex];
-                clonedArray[randomIndex] = original;
-            }
-            return clonedArray;
-        }
         }
     }
 
@@ -127,6 +131,9 @@
 
     function handleClickEvents (){
 
+        let items = [];
+        let cardsChosen = [];
+        let cardsChosenId = [];
         //private function
         function createTable (playersList) {
             let playersTable = "<table class='table table-hover table-light table-striped-columns'>"+
@@ -159,18 +166,32 @@
         const startGame = (table, images, rows, cols) => {
             const gamePrep = gamePreparations();
 
-            gamePrep.buildBoard(table, images[0].img, rows, cols);
+            gamePrep.buildBoard(table, images[0].img, rows, cols );
             const picks = gamePrep.pickRandom(images, (rows * cols) / 2);
-            const items = gamePrep.shuffle([...picks, ...picks]);
-
-            //console.log(items)
+            items = gamePrep.shuffle([...picks, ...picks]);
 
         }
 
+         const flipCard = (cardElem, delay) =>{
+            console.log("in flip",)
+            let imageIndex = cardElem.getAttribute('card-id')
+             console.log(imageIndex);
+             cardsChosen.push(items[imageIndex].name)
+            cardsChosenId.push(imageIndex);
+             // cardElem.setAttribute('src', cardElem.img)
+            if (cardsChosen.length ===2) {
+                console.log("now set timer",delay)
+                //setTimeout(checkForMatch, delay)
+            }
+
+        }
+
+
+
         return {
             displayHighScore : leaderboardTable,
-            runGame : startGame
-
+            runGame : startGame,
+            flipTheCard : flipCard
         }
     }
 
@@ -335,17 +356,21 @@
                 domElements.getFormDivElem().style.display = 'none';
                 gameData.initGameStat( name, domElements.getRowsSelect().value, domElements.getColsSelect().value);
                 handleButtonsClick.runGame(domElements.getGameBoardElem(),gameData.getCardArray(),gameData.getBoardRows(),gameData.getBoardCols());
-                document.getElementById("game").style.display = 'block'
+                let elementsArray = document.querySelectorAll(".card");
+                elementsArray.forEach(function(elem) {
+                    elem.addEventListener('click', handleButtonsClick.flipTheCard(elem , getData().getGameDelay()));
+                    console.log(elem)
+                });
 
+                document.getElementById("game").style.display = 'block'
             }
             else{
                if (!document.contains(document.getElementById("wrongName")))
                     domElements.getNameDivElem().appendChild(domElements.setNewElement("p","wrongName",gameData.getError(1),"block",`red`))
             }
-
-
-
         });
+
+
 
 
 
