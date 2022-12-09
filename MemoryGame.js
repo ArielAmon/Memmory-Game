@@ -138,23 +138,37 @@
             const picks = pickRandom(images, (rows * cols) / 2);
             const items = shuffle([...picks, ...picks]);
             console.log(items)
-            const table = document.querySelector('.table')
+            const table = document.querySelector('.board')
 
             let index = 0
-
+            // create the table element
+            // create the rows and cells of the table
             for (let row = 0; row < rows; row++) {
-                let matRow = document.createElement("tr");
-                //matRow.setAttribute("class",'row')
+                let tr = document.createElement("tr");
                 for (let col = 0; col < cols; col++,index++) {
-                    let matCol = document.createElement("td");
-                    //matCol.setAttribute("class",'col')
+                    let td = document.createElement("td");
                     let img = document.createElement("img");
                     img.src = items[index].img;
-                    matCol.appendChild(img);
-                    matRow.appendChild(matCol);
+                    img.classList.add(`${row}${col}`)
+                    //img.classList.add(`${array[count++]}`)
+                    td.appendChild(img);
+                    tr.appendChild(td);
                 }
-                table.appendChild(matRow);
+                table.appendChild(tr);
             }
+
+            // insert the table into the page
+
+
+            /*            for (let i = 0; i < items.length; i++) {
+                            const card = document.createElement('img')
+                            card.setAttribute('src', 'images/blank.png')
+                            card.setAttribute('data-id', i)
+                            //card.addEventListener('click', flipCard)
+
+                            grid.appendChild(card)
+                        }*/
+
 
         }
 
