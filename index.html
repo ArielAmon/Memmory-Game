@@ -35,7 +35,7 @@
             <div class="mb-3 col-sm-12">
                 <button id = "btnPlay" class="btn btn-primary" type="button">Play</button>
                 <button id = "btnSettings" class="btn btn-light" type="button" data-bs-toggle="collapse" data-bs-target="#settings" aria-expanded="false" aria-controls="collapseExample">Settings</button>
-                <button id = "btnScores" class="btn btn-outline-success" type="button">High Scores</button>
+                <button id = "btnHighScores" type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#highsScoreModal">High Scores</button>
             </div>
         </div>
 
@@ -83,20 +83,21 @@
     </div>
 
     <div id="gameOver" style="display: none">
-        <h3 id = "Game Over!"></h3>
-        <h4 id = "Number of cards played:"></h4>
+        <h3> Game Over!</h3>
+        <h5 id = "cardsPlayed"></h5>
+        <h5 id = "score"></h5>
+        <button id = "btnOK" class="btn btn-primary" type="button">Ok</button>
     </div>
 
-
-    <div class="modal fade" tabindex="-1" id="scores-modal">
+    <div class="modal fade" id="highsScoreModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Leaderboard</h5>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Leaderboard</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p id ="Leaderboard content">Modal body text goes here.</p>
+                    <p>">Modal body text goes here.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -104,11 +105,6 @@
             </div>
         </div>
     </div>
-
-
-
-
-
 
 
 

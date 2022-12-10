@@ -3,77 +3,15 @@
 
 //-----------------------------------------------------------------------------------
 
-    function getSetHtmlElements (){
+    function createElement (type, id, error, status, color ) {
 
-        const leaderboardModal = new bootstrap.Modal('#scores-modal')
-        const leaderboardModalContent = document.getElementsByClassName("modal-body")[0].children[0];
+        const elem = document.createElement(type);
+        elem.id = id;
+        elem.textContent = error;
+        elem.style.display = status;
+        elem.style.color = color;
 
-
-        const playNameInput = document.getElementById("playerName");
-        const playButton = document.getElementById("btnPlay");
-        const scoresButton = document.getElementById("btnScores");
-        const abandonButton = document.getElementById("btnAbandon");
-
-        const selectRows = document.getElementById("NumberOfRows");
-        const selectCols = document.getElementById("NumberOfCols");
-        const selectDelay = document.getElementById("Delay");
-        const gameBoard = document.querySelector('.table')
-
-        const NameDiv = document.getElementById("Name");
-        const rowsDiv = document.getElementById("rows");
-        const colsDiv = document.getElementById("cols");
-        const formDiv = document.getElementById("preGame");
-
-        const score = () =>{ return scoresButton; }
-        const play = () =>{ return playButton; }
-        const playerName = () =>{ return playNameInput; }
-        const abandonGame = () =>{ return abandonButton; }
-
-        const rows = () =>{ return selectRows; }
-        const cols = () =>{ return selectCols; }
-        const delay = () =>{ return selectDelay; }
-
-        const rowsDivElem = () =>{ return rowsDiv; }
-        const colsDivElem = () =>{ return colsDiv; }
-        const nameDivElem = () =>{ return NameDiv; }
-        const formDivElem = () =>{ return formDiv; }
-        const gameBoardElem = () =>{ return gameBoard; }
-
-        const leaderboard = () =>{ return leaderboardModal; }
-        const leaderboardContent = () =>{ return leaderboardModalContent; }
-
-        const createElement = (type, id, error, status, color ) =>{
-
-            const elem = document.createElement(type);
-            elem.id = id;
-            elem.textContent = error;
-            elem.style.display = status;
-            elem.style.color = color;
-
-            return elem;
-        }
-
-
-        return{
-            getScoreButton : score,
-            getPlayButton : play,
-            getAbandonButton : abandonGame,
-            getRowsSelect : rows,
-            getColsSelect : cols,
-            getDelaySelect : delay,
-            getRowsDivElem : rowsDivElem,
-            getColsDivElem : colsDivElem,
-            getNameDivElem : nameDivElem,
-            getFormDivElem : formDivElem,
-            getGameBoardElem : gameBoardElem,
-            getPlayerNameElem : playerName,
-            getLeaderboardModal : leaderboard,
-            getLeaderboardContent : leaderboardContent,
-
-            setNewElement : createElement,
-
-        }
-
+        return elem;
     }
 
 //-----------------------------------------------------------------------------------
@@ -95,7 +33,6 @@
                     }
                     table.appendChild(tr);
                 }
-
             },
 
             pickRandom : (array, items) => {
@@ -136,31 +73,86 @@
         let cardsChosenId = [];
         let cardsMatched = [];
         let cardsMatchedId = [];
-        let gameDelay ,cards ;
         let steps = 0 ;
-        let stepsElem = document.getElementById("steps")
+        let cards , currGameData;
+        let stepsElem = document.getElementById("steps");
+        let cardPlayedElem = document.getElementById("cardsPlayed");
+        let scoreElem = document.getElementById("score");
 
 
-        function initData (delay) {
+        function initData (data) {
             items = [];
             cardsChosen = [];
             cardsChosenId = [];
             cardsMatched = [];
             cardsMatchedId = [];
             steps = 0 ;
-            gameDelay = delay * 1000;
+            currGameData = {...data}
         }
 
+        function sortPlayersByScore(players) {
+            let sorted = players.sort( (playerA, playerB) =>{return(playerA.score > playerB.score ? -1 : 1); })
+            return sorted.slice(0,3);
+        }
+
+        const leaderboardTable = (content) =>{
+
+            const leadPlayers = JSON.parse(localStorage.getItem('players'));
+
+            if (leadPlayers.length === 0) content.textContent  = "No high scores yet !";
+            else content.innerHTML = createTable(sortPlayersByScore(leadPlayers));
+        }
+
+        function isTopThree(playerScore, players){
+
+            if (players.length < 3) return true;
+
+            for (let i = 0 ; i < players.length ;i++){
+                if(playerScore > players[i].score) return true
+            }
+            return false;
+        }
 
         function createTable (playersList) {
             let playersTable = "<table class='table table-hover table-light table-striped-columns'>"+
                 " <thead >" + "<tr>" + " <th> Rank </th> " + " <th> Player </th> " + " <th> Score </th> " + "</tr> " + "</thead>" + "<tbody > " ;
             playersList.forEach(player =>{
-                playersTable += "" + "<tr  > " + "<td >" + (playersList.indexOf(player) + 1) + " </td> " + "<td >" + player.player + " </td> " + "<td >" + player.score + " </td> " + " </tr> "
+                playersTable += "" + "<tr> " + "<td>" + (playersList.indexOf(player) + 1) + " </td> " + "<td >" + player.name + " </td> " + "<td >" + player.score + " </td> " + " </tr> "
             })
             playersTable += "</tbody> " + "</table> " ;
             return playersTable;
         }
+
+
+        function handleWin(){
+
+            cardPlayedElem.textContent = `Number of cards played : ${currGameData.row * currGameData.col }`;
+            let score = Math.floor((5 * currGameData.row * currGameData.col) + (100 / steps) + (20 / currGameData.delay));
+            const leadPlayers = JSON.parse(localStorage.getItem('players'));
+            const newElem = document.createElement("p")
+            newElem.setAttribute('id', 'currLeadboard');
+            scoreElem.insertAdjacentElement('afterend',newElem)
+
+            if(isTopThree(score, leadPlayers)){
+                leadPlayers.push({name: currGameData.playerName ,score})
+                let topThree = sortPlayersByScore(leadPlayers);
+                localStorage.clear()
+                localStorage.setItem("players", JSON.stringify(topThree));
+                const index = topThree.findIndex(object => {
+                    return object.name === currGameData.playerName;
+                });
+                scoreElem.textContent = `Score: ${score} ,You are ranked :  ${index+1}`;
+                newElem.innerHTML = createTable(topThree)
+            }else{
+                scoreElem.textContent = `Score: ${score} ,You score is not high enough to be at top 3 !`;
+                newElem.innerHTML = createTable(leadPlayers)
+            }
+
+
+            document.getElementById("game").style.display = 'none';
+            document.getElementById("gameOver").style.display = 'block';
+        }
+
 
         function checkMatchCards () {
 
@@ -176,8 +168,8 @@
             cards[cardsChosenId[1]].setAttribute('src', 'images/card.jpg')
             }
 
-            if  (cardsMatched.length === items.length) {
-               console.log('Congratulations! You found them all!')
+            if  (cardsMatchedId.length === items.length) {
+                handleWin();
             }
             cards.forEach((elem) =>{
                 if (!cardsMatchedId.includes(elem.getAttribute('card-id')))
@@ -197,52 +189,32 @@
             this.setAttribute('src', items[imageIndex].img)
             if (cardsChosen.length ===2) {
                 cards.forEach((elem) =>{elem.removeEventListener('click', flipCard);});
-                setTimeout(checkMatchCards, gameDelay);
+                setTimeout(checkMatchCards, currGameData.delay * 1000);
             }
 
         }
 
-        const leaderboardTable = (modal, content) =>{
-            if (window.localStorage.length === 0){
-                modal.show();
-                content.textContent = "No high scores yet !";
-            }
-            else{
-                const leadPlayers = JSON.parse(localStorage.getItem('players'));
-                console.log(leadPlayers);
-                function sortPlayersByScore() {
-                    let sorted = leadPlayers.sort( (playerA, playerB) =>{return(playerA.score > playerB.score ? -1 : 1); })
-                    return createTable(sorted.slice(0,3));
-                }
-                content.innerHTML = sortPlayersByScore();
-                modal.show();
-            }
-        }
-
-/*             playerName : name,
-            board :domElements.getGameBoardElem(),
-            allCard : gameData.getCardArray(),
-            row : gameData.getBoardRows(),
-            col : gameData.getBoardCols(),
-            delay : gameData.getGameDelay(),*/
-
-        const startGame = (gameInfo) => {
-            //console.log(gameInfo.allCard)
+        const startGame = (data) => {
             const gamePrep = gamePreparations();
-            initData(gameInfo.delay);
-
+            initData(data);
             stepsElem.textContent = `Steps: ${steps} `
-            gamePrep.buildBoard(gameInfo.board, gameInfo.allCard[0].img, gameInfo.row, gameInfo.col, flipCard);
+            gamePrep.buildBoard(data.board, data.allCard[0].img, data.row, data.col, flipCard);
             cards = document.querySelectorAll('img')
-            const picks = gamePrep.pickRandom(gameInfo.allCard.splice(1,gameInfo.allCard.length+1), (gameInfo.row * gameInfo.col) / 2);
+            const picks = gamePrep.pickRandom(data.allCard.splice(1,data.allCard.length+1), (data.row * data.col) / 2);
             items = gamePrep.shuffle([...picks, ...picks]);
-            console.log(items)
+
         }
 
+        const deleteCurrBoard = (board) =>{
+            while ( board.firstChild) {
+                board.removeChild( board.firstChild);
+            }
+        }
 
         return {
             displayHighScore : leaderboardTable,
             runGame : startGame,
+            deleteBoard : deleteCurrBoard,
         }
     }
 
@@ -256,7 +228,7 @@
         const checkSizeParameters = (data) => {
 
             if (!checkMatSize(data.row, data.col) && !document.contains(document.getElementById("wrongMatSizeMessage"))){
-                data.elemDiv.appendChild(data.addFunc("p","wrongMatSizeMessage",data.error,"block",`red`));
+                data.elemDiv.appendChild(createElement("p","wrongMatSizeMessage",data.error,"block",`red`));
                 data.elemPlay.setAttribute("disabled", "true")
             }
             else {
@@ -269,16 +241,12 @@
 
         const checkName = (nameToCheck) =>{
             return (/^[A-Za-z0-9]+$/.test(nameToCheck) && (nameToCheck.length <= 12))
-
         }
-
-
 
         return{
             matSizeValidator : checkMatSize,
             validateGameBoardSize :checkSizeParameters,
             validateName : checkName
-
         }
 
     }
@@ -312,7 +280,6 @@
             { name: 'Melon', img: 'images/15.jpg'},
         ];
 
-        let playersList = [];
         let boardRows, boardCols, gameDelay ;
         boardRows = boardCols = gameDelay = 0;
 
@@ -322,17 +289,14 @@
             getGameDelay: ()=>{ return gameDelay;},
 
             getError: (index)=>{ return errorMessages[index];},
-            getImagesArray:()=>{return cardArray;},
-            getPlayersList :()=>{return playersList;},
-            getCardArray :()=>{return cardArray;},
+            getCardArray :()=>{
+                const cloned = Array.from(cardArray);
+                return cloned;},
 
-            setBoardRows: (rows)=>{ boardRows = rows;},
-            setBoardCols: (cols)=>{ boardCols = cols;},
             setGameDelay: (delay)=>{
                 gameDelay = delay;},
 
             initGameStat: (name, rows, cols, delay)=>{
-                playersList.push({name : 0})
                 boardRows = rows;
                 boardCols = cols;
                 gameDelay = delay;
@@ -343,35 +307,43 @@
     //-----------------------------------------------------------------------------------
     document.addEventListener("DOMContentLoaded", () => {
 
-        const domElements = getSetHtmlElements();
+        const leaderboardModalContent = document.getElementsByClassName("modal-body")[0].children[0];
+
+        const playNameInput = document.getElementById("playerName");
+        const playButton = document.getElementById("btnPlay");
+        const highScoresButton = document.getElementById("btnHighScores");
+        const abandonButton = document.getElementById("btnAbandon");
+        const okButton = document.getElementById("btnOK");
+
+        const selectRows = document.getElementById("NumberOfRows");
+        const selectCols = document.getElementById("NumberOfCols");
+        const selectDelay = document.getElementById("Delay");
+        const gameBoardTable = document.querySelector('.table')
+
+        const NameDivElem = document.getElementById("Name");
+        const rowsDivElem = document.getElementById("rows");
+        const colsDivElem = document.getElementById("cols");
+        const formDivElem = document.getElementById("preGame");
+
+
         const handleButtonsClick = handleClickEvents();
         const validator = validations();
         const gameData = getData();
 
+        let players = []
+        window.localStorage.setItem("players",JSON.stringify(players))
 
-        let players = [ {player: "Ariel", score: 70},
-            {player: "Sol", score: 100},
-            {player: "Noam", score: 8000000},
-            {player: "ELi", score: 2500},
-            {player: "Miri", score: 5000}];
-
-
-        localStorage.setItem("players", JSON.stringify(players));
-
-
-        domElements.getScoreButton().addEventListener('click', ()=>{
-
-            handleButtonsClick.displayHighScore(domElements.getLeaderboardModal(), domElements.getLeaderboardContent());
+        highScoresButton.addEventListener('click', ()=>{
+            handleButtonsClick.displayHighScore(leaderboardModalContent);
         });
 
-        domElements.getRowsSelect().addEventListener('change',(e)=>{
+        selectRows.addEventListener('change',(e)=>{
 
             let checkedData = {
                 row : e.target.value,
-                col : domElements.getColsSelect().value,
-                elemDiv : domElements.getRowsDivElem(),
-                elemPlay : domElements.getPlayButton(),
-                addFunc : domElements.setNewElement,
+                col : selectCols.value,
+                elemDiv : rowsDivElem,
+                elemPlay : playButton,
                 error : gameData.getError(0),
             };
 
@@ -379,69 +351,62 @@
 
         });
 
-        domElements.getColsSelect().addEventListener('change',(e)=>{
+        selectCols.addEventListener('change',(e)=>{
 
             let checkedData = {
-                row : domElements.getRowsSelect().value,
+                row : selectRows.value,
                 col : e.target.value,
-                elemDiv : domElements.getColsDivElem(),
-                elemPlay : domElements.getPlayButton(),
-                addFunc : domElements.setNewElement,
+                elemDiv : colsDivElem,
+                elemPlay : playButton,
                 error : gameData.getError(0),
             };
 
             validator.validateGameBoardSize(checkedData);
         });
 
-        domElements.getDelaySelect().addEventListener('change',(e)=>{
+        selectDelay.addEventListener('change',(e)=>{
             gameData.setGameDelay(e.target.value);
         });
 
-        domElements.getPlayButton().addEventListener('click',(e)=>{
+        playButton.addEventListener('click',(e)=>{
 
-            let name = domElements.getPlayerNameElem().value.trim();
+            let name = playNameInput.value.trim();
 
             if(validator.validateName(name)){
 
                 if (document.contains(document.getElementById("wrongName")))
                     document.getElementById("wrongName").remove()
 
-                domElements.getFormDivElem().style.display = 'none';
-                gameData.initGameStat( name, domElements.getRowsSelect().value, domElements.getColsSelect().value, domElements.getDelaySelect().value);
-                let data = {
+                formDivElem.style.display = 'none';
+                gameData.initGameStat( name, selectRows.value, selectCols.value, selectDelay.value);
+                const data = {
                     playerName : name,
-                    board :domElements.getGameBoardElem(),
+                    board :gameBoardTable,
                     allCard : gameData.getCardArray(),
                     row : gameData.getBoardRows(),
                     col : gameData.getBoardCols(),
                     delay : gameData.getGameDelay(),
-
                 };
                 handleButtonsClick.runGame(data);
-                //handleButtonsClick.runGame(domElements.getGameBoardElem(),gameData.getCardArray(),gameData.getBoardRows(),gameData.getBoardCols(),gameData.getGameDelay());
                 document.getElementById("game").style.display = 'block'
             }
             else{
                 if (!document.contains(document.getElementById("wrongName")))
-                    domElements.getNameDivElem().appendChild(domElements.setNewElement("p","wrongName",gameData.getError(1),"block",`red`))
+                    NameDivElem.appendChild(createElement("p","wrongName",gameData.getError(1),"block",`red`))
             }
         });
 
-        domElements.getAbandonButton().addEventListener('click', ()=>{
-            (() =>{
-                while ( domElements.getGameBoardElem().firstChild) {
-                    domElements.getGameBoardElem().removeChild( domElements.getGameBoardElem().firstChild);
-                }
-            })();
+        abandonButton.addEventListener('click', ()=>{
+            handleButtonsClick.deleteBoard(gameBoardTable)
             document.getElementById("game").style.display = 'none';
-            domElements.getFormDivElem().style.display = 'block';
+            formDivElem.style.display = 'block';
         })
-
-
-
-
-
-
+        okButton.addEventListener('click', ()=>{
+            handleButtonsClick.deleteBoard(gameBoardTable)
+            document.getElementById('currLeadboard').remove()
+            document.getElementById("gameOver").style.display = 'none';
+            formDivElem.style.display = 'block';
+        })
     });
 
 })();
