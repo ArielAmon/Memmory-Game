@@ -166,7 +166,7 @@
         function handleWin(){
 
             cardPlayedElem.textContent = `Number of cards played : ${currGameData.row * currGameData.col }`;
-            let score = Math.floor((10 * currGameData.row * currGameData.col) - steps - (10 *  currGameData.delay));
+            let score = Math.floor(100 + (10 * currGameData.row * currGameData.col) - steps - (10 *  currGameData.delay));
             const leadPlayers = JSON.parse(localStorage.getItem('players'));
             const newElem = document.createElement("p")
             newElem.setAttribute('id', 'currLeadboard');
