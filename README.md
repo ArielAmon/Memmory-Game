@@ -9,9 +9,9 @@ The game features are :
 - Card shuffle algorithm used : Fisher-Yates
 - Score calculdated as follow :
    " 100 + (10 * currGameData.row * currGameData.col) - steps - (10 *  currGameData.delay) " 
-  base score = 100
-  added - 10 * number of card played (choose more cards, earn more points).
-  substruct - number of steps needed to complete the game.
-  substruct - 10 * deley time factor (use as low as you can, and the penelty will be less)
+  - base score = 100
+  - added - 10 * number of card played (choose more cards, earn more points).
+  - substruct - number of steps needed to complete the game.
+  - substruct - 10 * deley time factor (use as low as you can, and the penelty will be less)
   
 
