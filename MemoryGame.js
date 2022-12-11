@@ -110,7 +110,6 @@
 
         const leaderboardTable = (content) =>{
             const leadPlayers = JSON.parse(localStorage.getItem('players'));
-            console.log("hi from leader",leadPlayers)
             if (leadPlayers.length === 0) content.textContent  = "No high scores yet !";
             else content.innerHTML = createTable(sortPlayersByScore(leadPlayers));
         }
