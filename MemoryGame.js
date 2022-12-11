@@ -2,7 +2,15 @@
 (()=>{
 
 //-----------------------------------------------------------------------------------
-
+    /**
+     * Function to create an error element with error message
+     * @param type
+     * @param id
+     * @param error
+     * @param status
+     * @param color
+     * @returns {*}
+     */
     function createElement (type, id, error, status, color ) {
 
         const elem = document.createElement(type);
@@ -15,6 +23,10 @@
     }
 
 //-----------------------------------------------------------------------------------
+    /**
+     * Module for functions that setting the game
+     * @returns {{buildBoard: buildBoard, shuffle: (function(*): *[]), pickRandom: (function(*, *): *[])}}
+     */
     function gamePreparations(){
 
         return {
@@ -63,57 +75,30 @@
         }
     }
 
-
 //-----------------------------------------------------------------------------------
-
-    function handleClickEvents (){
-
-        let items = [];
-        let cardsChosen = [];
-        let cardsChosenId = [];
-        let cardsMatched = [];
-        let cardsMatchedId = [];
-        let steps = 0 ;
-        let cards , currGameData;
-        let stepsElem = document.getElementById("steps");
-        let cardPlayedElem = document.getElementById("cardsPlayed");
-        let scoreElem = document.getElementById("score");
+    /**
+     * Module of functions that handles the leaderboard table
+     * @returns {{isTopThree: ((function(*, *): (boolean))|*), makeTable: (function(*): string), sortPlayers: (function(*): *), alreadyPlayed: ((function(*): (boolean))|*), displayTable: leaderboardTable}}
+     */
+    function handleTable (){
 
 
-        function initData (data) {
-            items = [];
-            cardsChosen = [];
-            cardsChosenId = [];
-            cardsMatched = [];
-            cardsMatchedId = [];
-            steps = 0 ;
-            currGameData = {...data}
+
+        const sortPlayersByScore = (players) =>{
+            return players.sort( (playerA, playerB) =>{return(playerA.score > playerB.score ? -1 : 1); })
         }
 
-        function sortPlayersByScore(players) {
-            let sorted = players.sort( (playerA, playerB) =>{return(playerA.score > playerB.score ? -1 : 1); })
-            return sorted.slice(0,3);
-        }
-
-        const leaderboardTable = (content) =>{
-
+        const checkExists = (name)=>{
             const leadPlayers = JSON.parse(localStorage.getItem('players'));
+            if (leadPlayers.length === 0) return false
 
-            if (leadPlayers.length === 0) content.textContent  = "No high scores yet !";
-            else content.innerHTML = createTable(sortPlayersByScore(leadPlayers));
-        }
-
-        function isTopThree(playerScore, players){
-
-            if (players.length < 3) return true;
-
-            for (let i = 0 ; i < players.length ;i++){
-                if(playerScore > players[i].score) return true
+            for (const player of leadPlayers){
+                if (player.name.toLowerCase() === name.toLowerCase() ) return true;
             }
             return false;
         }
 
-        function createTable (playersList) {
+        const createTable = (playersList) =>{
             let playersTable = "<table class='table table-hover table-light table-striped-columns'>"+
                 " <thead >" + "<tr>" + " <th> Rank </th> " + " <th> Player </th> " + " <th> Score </th> " + "</tr> " + "</thead>" + "<tbody > " ;
             playersList.forEach(player =>{
@@ -123,31 +108,114 @@
             return playersTable;
         }
 
+        const leaderboardTable = (content) =>{
+            const leadPlayers = JSON.parse(localStorage.getItem('players'));
+            console.log("hi from leader",leadPlayers)
+            if (leadPlayers.length === 0) content.textContent  = "No high scores yet !";
+            else content.innerHTML = createTable(sortPlayersByScore(leadPlayers));
+        }
+
+        const checkAmongTheBest = (playerScore, players) =>{
+
+            for (let i = 0 ; i < players.length ;i++){
+                if(playerScore > players[i].score) return true
+            }
+            return false;
+        }
+
+        return{
+            sortPlayers : sortPlayersByScore,
+            alreadyPlayed : checkExists,
+            makeTable : createTable,
+            displayTable : leaderboardTable,
+            isTopThree: checkAmongTheBest,
+
+        }
+
+    }
+
+
+//-----------------------------------------------------------------------------------
+    /**
+     * Module of functions that handles user input(click) and therefore the gameplay
+     * @returns {{runGame: startGame, displayHighScore: leaderboardTable, deleteBoard: deleteCurrBoard}}
+     */
+    function handleClickEvents (){
+
+        let items = [];
+        let cardsChosen = [];
+        let cardsChosenId = [];
+        let cardsMatchedId = [];
+        let steps = 0 ;
+        let cards , currGameData;
+        let stepsElem = document.getElementById("steps");
+        let cardPlayedElem = document.getElementById("cardsPlayed");
+        let scoreElem = document.getElementById("score");
+        const manageTable = handleTable();
+
+
+        function initData (data) {
+            items = [];
+            cardsChosen = [];
+            cardsChosenId = [];
+            cardsMatchedId = [];
+            steps = 0 ;
+            currGameData = {...data}
+        }
+
 
         function handleWin(){
 
             cardPlayedElem.textContent = `Number of cards played : ${currGameData.row * currGameData.col }`;
-            let score = Math.floor((5 * currGameData.row * currGameData.col) + (100 / steps) + (20 / currGameData.delay));
+            let score = Math.floor((10 * currGameData.row * currGameData.col) - steps - (10 *  currGameData.delay));
             const leadPlayers = JSON.parse(localStorage.getItem('players'));
             const newElem = document.createElement("p")
             newElem.setAttribute('id', 'currLeadboard');
             scoreElem.insertAdjacentElement('afterend',newElem)
+            let index ,sorted;
 
-            if(isTopThree(score, leadPlayers)){
-                leadPlayers.push({name: currGameData.playerName ,score})
-                let topThree = sortPlayersByScore(leadPlayers);
-                localStorage.clear()
-                localStorage.setItem("players", JSON.stringify(topThree));
-                const index = topThree.findIndex(object => {
+            const findIndex = (array)=>{
+                index = array.findIndex(object => {
                     return object.name === currGameData.playerName;
                 });
-                scoreElem.textContent = `Score: ${score} ,You are ranked :  ${index+1}`;
-                newElem.innerHTML = createTable(topThree)
-            }else{
-                scoreElem.textContent = `Score: ${score} ,You score is not high enough to be at top 3 !`;
-                newElem.innerHTML = createTable(leadPlayers)
             }
 
+            const addOrEditPlayer = ()=>{
+            if (!manageTable.alreadyPlayed(currGameData.playerName)){
+                leadPlayers.push({name: currGameData.playerName ,score});
+            }
+            else{
+                findIndex(leadPlayers);
+                leadPlayers[index].score = score;
+            }
+        }
+
+        if (leadPlayers.length < 3 ) {
+            addOrEditPlayer()
+            sorted = manageTable.sortPlayers(leadPlayers);
+            findIndex(sorted);
+            localStorage.clear()
+            localStorage.setItem("players", JSON.stringify(sorted));
+            newElem.innerHTML = manageTable.makeTable(sorted)
+            scoreElem.textContent = `Score: ${score} ,You are ranked :  ${index+1}`;
+        }
+        else {
+            if (manageTable.isTopThree(score, leadPlayers)){
+
+                addOrEditPlayer()
+                sorted = manageTable.sortPlayers(leadPlayers);
+                let topThree = sorted.slice(0,3);
+                findIndex(topThree);
+                localStorage.clear()
+                localStorage.setItem("players", JSON.stringify(topThree));
+                scoreElem.textContent = `Score: ${score} ,You are ranked :  ${index+1}`;
+                newElem.innerHTML = manageTable.makeTable(topThree)
+            }
+            else{
+                scoreElem.textContent = `Score: ${score} ,You score is not high enough to be at top 3 !`;
+                newElem.innerHTML = manageTable.makeTable(leadPlayers)
+            }
+        }
 
             document.getElementById("game").style.display = 'none';
             document.getElementById("gameOver").style.display = 'block';
@@ -159,13 +227,12 @@
             if (cardsChosen[0] === cardsChosen[1] && cardsChosenId[0] !== cardsChosenId[1]){
                 cards[cardsChosenId[0]].removeEventListener('click', flipCard);
                 cards[cardsChosenId[1]].removeEventListener('click', flipCard);
-                cardsMatched.push(cardsChosen)
                 cardsMatchedId.push(cardsChosenId[0])
                 cardsMatchedId.push(cardsChosenId[1])
             }
             else {
-            cards[cardsChosenId[0]].setAttribute('src', 'images/card.jpg')
-            cards[cardsChosenId[1]].setAttribute('src', 'images/card.jpg')
+                cards[cardsChosenId[0]].setAttribute('src', 'images/card.jpg')
+                cards[cardsChosenId[1]].setAttribute('src', 'images/card.jpg')
             }
 
             if  (cardsMatchedId.length === items.length) {
@@ -187,7 +254,7 @@
             cardsChosen.push(items[imageIndex].name)
             cardsChosenId.push(imageIndex);
             this.setAttribute('src', items[imageIndex].img)
-            if (cardsChosen.length ===2) {
+            if (cardsChosen.length === 2 ) {
                 cards.forEach((elem) =>{elem.removeEventListener('click', flipCard);});
                 setTimeout(checkMatchCards, currGameData.delay * 1000);
             }
@@ -212,13 +279,17 @@
         }
 
         return {
-            displayHighScore : leaderboardTable,
+            displayHighScore : manageTable.displayTable,
             runGame : startGame,
             deleteBoard : deleteCurrBoard,
         }
     }
 
     //-----------------------------------------------------------------------------------
+    /**
+     * Module of functions of validations. such as name , correct size of board ,etc.
+     * @returns {{validateGameBoardSize: checkSizeParameters, matSizeValidator: (function(*, *): boolean), validateName: (function(*))}}
+     */
     function validations (){
 
         const checkMatSize = (rows, cols) =>{
@@ -251,8 +322,10 @@
 
     }
     //-----------------------------------------------------------------------------------
-
-
+    /**
+     * Module of functions that stores all the data about the game, with getter and setter functions.
+     * @returns {{getError: (function(*): string), setGameDelay: setGameDelay, getBoardRows: (function(): *), getCardArray: (function(): ({img: string, name: string}|{img: string, name: string}|{img: string, name: string}|{img: string, name: string}|{img: string, name: string})[]), getBoardCols: (function(): *), initGameStat: initGameStat, getGameDelay: (function(): *)}}
+     */
     function getData() {
 
         const errorMessages = [
@@ -329,9 +402,6 @@
         const handleButtonsClick = handleClickEvents();
         const validator = validations();
         const gameData = getData();
-
-        let players = []
-        window.localStorage.setItem("players",JSON.stringify(players))
 
         highScoresButton.addEventListener('click', ()=>{
             handleButtonsClick.displayHighScore(leaderboardModalContent);
